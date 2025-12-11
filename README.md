@@ -110,10 +110,15 @@ Answer the setup questions:
 - Deploy path on server
 - Git repository URL
 - Domain name (optional)
+- **Git authentication method** (PAT/SSH/None)
+  - If PAT: Enter your GitHub Personal Access Token
+  - If SSH: SSH key will be generated and displayed
 - Application type (nodejs, php, static, python)
 - Build command (optional)
 - Start command (for Node.js/Python)
 - Application port
+
+**Note:** AutoDeploy will automatically setup Git credentials on your server so it can pull from private repositories.
 
 ### 2. Deploy Your Application
 
@@ -235,6 +240,8 @@ server:
 git:
   repository: https://github.com/user/repo.git
   branch: main
+  authMethod: pat  # pat, ssh, or none
+  token: ghp_xxxxxxxxxxxxxxxxxxxx  # GitHub Personal Access Token (keep secret!)
 
 build:
   command: npm run build
@@ -248,6 +255,24 @@ domain: example.com
 ```bash
 echo "deploy-config.yml" >> .gitignore
 ```
+
+### Git Authentication
+
+AutoDeploy supports three authentication methods:
+
+1.  **Personal Access Token (PAT)** - Recommended
+    -   Create token at: https://github.com/settings/tokens
+    -   Select scope: `repo` (full control of private repositories)
+    -   AutoDeploy will store it securely on server
+
+2.  **SSH Key**
+    -   AutoDeploy generates SSH key on server
+    -   You add public key to GitHub manually
+    -   More secure, no password storage
+
+3.  **None**
+    -   For public repositories
+    -   Or if you want to setup credentials manually
 
 ---
 

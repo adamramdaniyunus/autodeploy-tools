@@ -15,6 +15,8 @@ server:
 git:
   repository: https://github.com/username/repo.git
   branch: main
+  authMethod: pat  # pat, ssh, or none
+  token: ghp_xxxxxxxxxxxxxxxxxxxx  # Only for PAT method, keep secret!
 
 build:
   command: npm run build  # Leave empty if no build needed

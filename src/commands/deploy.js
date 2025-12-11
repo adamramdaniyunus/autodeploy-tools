@@ -63,8 +63,45 @@ export async function deployCommand(options) {
       );
 
       if (config.build.startCommand) {
+        // Check if PM2 process already exists, restart if yes, start if no
+        let pm2StartCmd;
+        
+        if (config.build.startCommand.startsWith('npm ')) {
+          // For npm scripts, use pm2 start npm with -- run
+          const npmScript = config.build.startCommand.replace('npm ', '');
+          pm2StartCmd = `
+            if pm2 describe ${config.project.name} > /dev/null 2>&1; then
+              pm2 restart ${config.project.name}
+            else
+              pm2 start npm --name "${config.project.name}" -- ${npmScript}
+            fi
+            pm2 save
+          `;
+        } else if (config.build.startCommand.startsWith('node ')) {
+          // For direct node commands
+          const scriptPath = config.build.startCommand.replace('node ', '');
+          pm2StartCmd = `
+            if pm2 describe ${config.project.name} > /dev/null 2>&1; then
+              pm2 restart ${config.project.name}
+            else
+              pm2 start ${scriptPath} --name "${config.project.name}"
+            fi
+            pm2 save
+          `;
+        } else {
+          // Assume it's a script path
+          pm2StartCmd = `
+            if pm2 describe ${config.project.name} > /dev/null 2>&1; then
+              pm2 restart ${config.project.name}
+            else
+              pm2 start ${config.build.startCommand} --name ${config.project.name}
+            fi
+            pm2 save
+          `;
+        }
+        
         await sshClient.execWithSpinner(
-          `pm2 delete ${config.project.name} || true && pm2 start ${config.build.startCommand} --name ${config.project.name} && pm2 save`,
+          pm2StartCmd,
           'Restarting application...'
         );
       }

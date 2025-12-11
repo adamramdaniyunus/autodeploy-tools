@@ -84,6 +84,24 @@ export async function initCommand() {
     },
     {
       type: 'list',
+      name: 'gitAuth',
+      message: 'Git authentication method:',
+      choices: [
+        { name: 'Personal Access Token (PAT) - Recommended', value: 'pat' },
+        { name: 'SSH Key', value: 'ssh' },
+        { name: 'None (Public repo or manual setup)', value: 'none' }
+      ],
+      default: 'pat'
+    },
+    {
+      type: 'password',
+      name: 'gitToken',
+      message: 'GitHub Personal Access Token:',
+      when: (answers) => answers.gitAuth === 'pat',
+      validate: (input) => input.length > 0 || 'Token is required for PAT authentication'
+    },
+    {
+      type: 'list',
       name: 'appType',
       message: 'Application type:',
       choices: ['nodejs', 'php', 'static', 'python'],
@@ -125,7 +143,9 @@ export async function initCommand() {
     },
     git: {
       repository: answers.gitRepo,
-      branch: answers.gitBranch
+      branch: answers.gitBranch,
+      authMethod: answers.gitAuth,
+      token: answers.gitToken || null
     },
     build: {
       command: answers.buildCommand,
@@ -143,6 +163,9 @@ export async function initCommand() {
     
     // Setup server environment
     await setupServer(sshClient, config);
+    
+    // Setup git authentication
+    await setupGitAuth(sshClient, config);
     
     await sshClient.disconnect();
     
@@ -242,8 +265,16 @@ npm install --production
 
 # Restart application with PM2
 echo "[RESTART] Restarting application..."
-pm2 delete ${config.project.name} || true
-pm2 start ${config.build.startCommand} --name ${config.project.name}
+if pm2 describe ${config.project.name} > /dev/null 2>&1; then
+  pm2 restart ${config.project.name}
+else
+  ${config.build.startCommand.startsWith('npm ') 
+    ? `pm2 start npm --name ${config.project.name} -- ${config.build.startCommand.replace('npm ', '')}`
+    : config.build.startCommand.startsWith('node ')
+      ? `pm2 start ${config.build.startCommand.replace('node ', '')} --name ${config.project.name}`
+      : `pm2 start ${config.build.startCommand} --name ${config.project.name}`
+  }
+fi
 pm2 save
 ` : ''}
 
@@ -330,4 +361,97 @@ EOF`);
   
   // Get SSL certificate
   await sshClient.exec(`certbot --nginx -d ${config.domain} --non-interactive --agree-tos --email admin@${config.domain} || true`, { ignoreErrors: true });
+}
+
+async function setupGitAuth(sshClient, config) {
+  if (config.git.authMethod === 'none') {
+    console.log(chalk.yellow('\nSkipping Git authentication setup. You may need to configure manually.'));
+    return;
+  }
+
+  const spinner = ora('Setting up Git authentication...').start();
+
+  try {
+    if (config.git.authMethod === 'pat') {
+      // Setup Personal Access Token
+      spinner.text = 'Configuring Git credential store...';
+      
+      // Enable credential store
+      await sshClient.exec('git config --global credential.helper store', { 
+        cwd: config.server.deployPath 
+      });
+
+      // Extract username from repository URL
+      const repoMatch = config.git.repository.match(/github\.com[\/:](.+?)\/(.+?)(\.git)?$/);
+      const username = repoMatch ? repoMatch[1] : 'git';
+
+      // Create credentials file with token
+      const credentialUrl = config.git.repository.replace('https://', `https://${username}:${config.git.token}@`);
+      
+      // Store credential by doing a fetch
+      await sshClient.exec(
+        `git config credential.helper store && echo "${credentialUrl}" | git credential approve`,
+        { cwd: config.server.deployPath, ignoreErrors: true }
+      );
+
+      // Alternative: Create .git-credentials file directly
+      const homeDir = await sshClient.exec('echo $HOME');
+      const credFile = `${homeDir.stdout.trim()}/.git-credentials`;
+      
+      await sshClient.exec(
+        `echo "https://${username}:${config.git.token}@github.com" >> ${credFile} && chmod 600 ${credFile}`,
+        { ignoreErrors: true }
+      );
+
+      spinner.succeed('Git authentication configured with Personal Access Token');
+      
+    } else if (config.git.authMethod === 'ssh') {
+      // Setup SSH Key
+      spinner.text = 'Generating SSH key...';
+      
+      // Check if SSH key already exists
+      const sshKeyExists = await sshClient.fileExists('~/.ssh/id_ed25519');
+      
+      if (!sshKeyExists) {
+        // Generate SSH key
+        await sshClient.exec(
+          'ssh-keygen -t ed25519 -C "autodeploy@server" -f ~/.ssh/id_ed25519 -N ""',
+          { ignoreErrors: true }
+        );
+      }
+
+      // Get public key
+      const pubKeyResult = await sshClient.exec('cat ~/.ssh/id_ed25519.pub');
+      const publicKey = pubKeyResult.stdout.trim();
+
+      spinner.succeed('SSH key generated');
+      
+      console.log(chalk.yellow('\n' + '='.repeat(70)));
+      console.log(chalk.yellow('ACTION REQUIRED: Add this SSH key to your GitHub account'));
+      console.log(chalk.yellow('='.repeat(70)));
+      console.log(chalk.white('\n1. Go to: https://github.com/settings/ssh/new'));
+      console.log(chalk.white('2. Title: AutoDeploy Server'));
+      console.log(chalk.white('3. Key:\n'));
+      console.log(chalk.cyan(publicKey));
+      console.log(chalk.yellow('\n' + '='.repeat(70) + '\n'));
+
+      // Update git remote to use SSH
+      const sshUrl = config.git.repository
+        .replace('https://github.com/', 'git@github.com:')
+        .replace(/\.git$/, '') + '.git';
+
+      await sshClient.exec(
+        `git remote set-url origin ${sshUrl}`,
+        { cwd: config.server.deployPath, ignoreErrors: true }
+      );
+
+      console.log(chalk.blue('Git remote updated to use SSH'));
+      console.log(chalk.yellow('Please add the SSH key to GitHub before deploying.\n'));
+    }
+
+  } catch (error) {
+    spinner.fail('Git authentication setup failed');
+    console.log(chalk.yellow('You may need to configure Git credentials manually on the server.'));
+    console.log(chalk.gray('Error:', error.message));
+  }
 }
