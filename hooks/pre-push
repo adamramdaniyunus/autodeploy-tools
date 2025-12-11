@@ -1,0 +1,17 @@
+#!/bin/bash
+# Git pre-push hook untuk autodeploy
+# Install: cp hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+
+echo "[AUTODEPLOY] Triggering auto-deployment..."
+
+# Check if deploy-config.yml exists
+if [ ! -f "deploy-config.yml" ]; then
+    echo "[WARNING] No deploy-config.yml found. Run 'autodeploy init' first."
+    exit 0
+fi
+
+# Optional: Run autodeploy after successful push
+# Uncomment the line below to auto-deploy after git push
+# node_modules/.bin/autodeploy deploy || true
+
+exit 0

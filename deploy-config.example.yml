@@ -1,0 +1,24 @@
+# AutoDeploy Configuration Example
+# Copy this file to deploy-config.yml and fill in your details
+
+project:
+  name: my-app
+  type: nodejs  # nodejs, php, static, python
+
+server:
+  host: 192.168.1.100  # Your VPS IP
+  username: root
+  password: your-password
+  port: 22
+  deployPath: /var/www/html
+
+git:
+  repository: https://github.com/username/repo.git
+  branch: main
+
+build:
+  command: npm run build  # Leave empty if no build needed
+  startCommand: npm start  # For nodejs/python apps
+  port: 3000  # Application port
+
+domain: example.com  # Optional, leave null if not using domain
