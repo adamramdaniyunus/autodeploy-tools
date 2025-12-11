@@ -679,7 +679,7 @@ node bin/cli.js --help
 
 - **Documentation**: This README
 - **GitHub Issues**: Report bugs or request features
-- **Repository**: https://github.com/yourusername/autodeploy-cli
+- **Repository**: https://github.com/adamramdaniyunus/autodeploy-tools
 
 ---
 
