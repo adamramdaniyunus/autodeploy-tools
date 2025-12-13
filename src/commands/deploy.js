@@ -75,6 +75,7 @@ export async function deployCommand(options) {
             else
               pm2 start npm --name "${config.project.name}" -- ${npmScript}
             fi
+            pm2 startup
             pm2 save
           `;
         } else if (config.build.startCommand.startsWith('node ')) {
@@ -86,6 +87,7 @@ export async function deployCommand(options) {
             else
               pm2 start ${scriptPath} --name "${config.project.name}"
             fi
+            pm2 startup
             pm2 save
           `;
         } else {
@@ -96,6 +98,7 @@ export async function deployCommand(options) {
             else
               pm2 start ${config.build.startCommand} --name ${config.project.name}
             fi
+            pm2 startup
             pm2 save
           `;
         }
@@ -105,6 +108,63 @@ export async function deployCommand(options) {
           'Restarting application...'
         );
       }
+    } else if (config.project.type === 'laravel-react') {
+      // Laravel + React deployment flow
+      console.log(chalk.blue('\\n[LARAVEL-REACT] Starting full-stack deployment...\\n'));
+      
+      // 1. Install frontend dependencies
+      await sshClient.execWithSpinner(
+        `cd ${config.server.deployPath} && npm install`,
+        'Installing frontend dependencies...'
+      );
+      
+      // 2. Build frontend
+      const buildCmd = config.build.frontendBuildCmd || 'npm run build';
+      await sshClient.execWithSpinner(
+        `cd ${config.server.deployPath} && ${buildCmd}`,
+        'Building React frontend with Vite...'
+      );
+      
+      // 3. Install backend dependencies
+      if (config.build.composerInstall !== false) {
+        await sshClient.execWithSpinner(
+          `cd ${config.server.deployPath} && composer install --no-dev --optimize-autoloader`,
+          'Installing Laravel dependencies...'
+        );
+      }
+      
+      // 4. Run Laravel optimizations
+      if (config.build.laravelOptimize !== false) {
+        await sshClient.execWithSpinner(
+          `cd ${config.server.deployPath} && php artisan config:cache && php artisan route:cache && php artisan view:cache`,
+          'Optimizing Laravel (caching config/routes/views)...'
+        );
+      }
+      
+      // 5. Run migrations (safe mode, no --force)
+      if (config.build.runMigrations) {
+        await sshClient.execWithSpinner(
+          `cd ${config.server.deployPath} && php artisan migrate`,
+          'Running database migrations...'
+        );
+      }
+      
+      // 6. Reload PHP-FPM (dynamic version detection)
+      const phpVersionResult = await sshClient.exec(
+        'php -r "echo PHP_MAJOR_VERSION.\\".\\".PHP_MINOR_VERSION;"',
+        { ignoreErrors: true }
+      );
+      
+      const phpFpmService = phpVersionResult.stdout 
+        ? `php${phpVersionResult.stdout.trim()}-fpm` 
+        : 'php-fpm';
+      
+      await sshClient.execWithSpinner(
+        `systemctl reload ${phpFpmService} || systemctl reload php-fpm || true`,
+        `Reloading ${phpFpmService}...`
+      );
+      
+      console.log(chalk.green('\\n[LARAVEL-REACT] Full-stack deployment completed!\\n'));
     } else if (config.project.type === 'php') {
       await sshClient.execWithSpinner(
         'systemctl reload php-fpm || true',

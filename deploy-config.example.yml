@@ -3,7 +3,7 @@
 
 project:
   name: my-app
-  type: nodejs  # nodejs, php, static, python
+  type: nodejs  # nodejs, php, laravel-react, static, python
 
 server:
   host: 192.168.1.100  # Your VPS IP
@@ -24,3 +24,35 @@ build:
   port: 3000  # Application port
 
 domain: example.com  # Optional, leave null if not using domain
+
+# ============================================
+# Example for Laravel + React Monorepo
+# ============================================
+# project:
+#   name: my-laravel-react-app
+#   type: laravel-react
+#
+# server:
+#   host: 192.168.1.100
+#   username: root
+#   password: your-password
+#   port: 22
+#   deployPath: /var/www/html
+#
+# git:
+#   repository: https://github.com/username/laravel-react-app.git
+#   branch: main
+#   authMethod: pat
+#   token: ghp_xxxxxxxxxxxxxxxxxxxx
+#
+# build:
+#   # Frontend configuration
+#   frontendDir: resources/ts  # React TypeScript directory
+#   frontendBuildCmd: npm run build  # Vite build command
+#   
+#   # Backend configuration
+#   composerInstall: true  # Run composer install
+#   laravelOptimize: true  # Run Laravel cache commands
+#   runMigrations: false   # Set to true to auto-run migrations
+#
+# domain: app.example.com

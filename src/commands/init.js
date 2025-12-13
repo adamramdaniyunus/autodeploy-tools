@@ -104,14 +104,50 @@ export async function initCommand() {
       type: 'list',
       name: 'appType',
       message: 'Application type:',
-      choices: ['nodejs', 'php', 'static', 'python'],
+      choices: ['nodejs', 'php', 'laravel-react', 'static', 'python'],
       default: 'nodejs'
+    },
+    {
+      type: 'input',
+      name: 'frontendDir',
+      message: 'Frontend directory (relative to project root):',
+      default: 'resources/ts',
+      when: (answers) => answers.appType === 'laravel-react'
+    },
+    {
+      type: 'input',
+      name: 'frontendBuildCmd',
+      message: 'Frontend build command:',
+      default: 'npm run build',
+      when: (answers) => answers.appType === 'laravel-react'
+    },
+    {
+      type: 'confirm',
+      name: 'composerInstall',
+      message: 'Run composer install on deployment?',
+      default: true,
+      when: (answers) => answers.appType === 'laravel-react'
+    },
+    {
+      type: 'confirm',
+      name: 'laravelOptimize',
+      message: 'Run Laravel optimization commands (cache config/routes/views)?',
+      default: true,
+      when: (answers) => answers.appType === 'laravel-react'
+    },
+    {
+      type: 'confirm',
+      name: 'runMigrations',
+      message: 'Run database migrations on deployment?',
+      default: false,
+      when: (answers) => answers.appType === 'laravel-react'
     },
     {
       type: 'input',
       name: 'buildCommand',
       message: 'Build command (leave empty if none):',
-      default: ''
+      default: '',
+      when: (answers) => answers.appType !== 'laravel-react'
     },
     {
       type: 'input',
@@ -150,7 +186,13 @@ export async function initCommand() {
     build: {
       command: answers.buildCommand,
       startCommand: answers.startCommand || '',
-      port: answers.port ? parseInt(answers.port) : null
+      port: answers.port ? parseInt(answers.port) : null,
+      // Laravel-React specific
+      frontendDir: answers.frontendDir || null,
+      frontendBuildCmd: answers.frontendBuildCmd || null,
+      composerInstall: answers.composerInstall !== undefined ? answers.composerInstall : null,
+      laravelOptimize: answers.laravelOptimize !== undefined ? answers.laravelOptimize : null,
+      runMigrations: answers.runMigrations !== undefined ? answers.runMigrations : null
     },
     domain: answers.domain || null
   };
