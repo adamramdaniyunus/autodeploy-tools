@@ -4,22 +4,22 @@ CLI tool for automatic deployment with git push - setup once, deploy forever!
 
 ## Overview
 
-AutoDeploy CLI adalah tool command-line untuk automatic deployment yang membuat proses deploy aplikasi menjadi sangat mudah. Developer hanya perlu setup sekali, dan selanjutnya deploy bisa dilakukan dengan simple command atau bahkan otomatis saat git push.
+AutoDeploy CLI is a command-line tool for automatic deployment that makes the application deployment process incredibly easy. Developers only need to set it up once, and then deployments can be done with a simple command or even automatically on git push.
 
 ### Key Features
 
-- **No SSH Required** - Semua dilakukan otomatis dari CLI
-- **No Git PAT Setup** - Menggunakan git repository langsung
-- **No Manual Installation** - Setup otomatis di server
-- **Simple Deployment** - Deploy dengan satu command atau git push
-- **Easy Domain & SSL** - Otomatis setup Nginx dan Let's Encrypt
-- **Server Monitoring** - Command status untuk cek server
-- **Easy Rollback** - Kembali ke versi sebelumnya dengan mudah
+- **No SSH Required** - Everything is done automatically from the CLI
+- **No Git PAT Setup** - Uses git repository directly
+- **No Manual Installation** - Automatic server setup
+- **Simple Deployment** - Deploy with one command or git push
+- **Easy Domain & SSL** - Automatic Nginx and Let's Encrypt setup
+- **Server Monitoring** - Status command to check server
+- **Easy Rollback** - Return to previous version easily
 
 ### Supported Applications
 
-- **Node.js** - Express, Next.js, NestJS, Koa, dll
-- **PHP** - Laravel, CodeIgniter, WordPress, Symfony, dll
+- **Node.js** - Express, Next.js, NestJS, Koa, etc.
+- **PHP** - Laravel, CodeIgniter, WordPress, Symfony, etc.
 - **Laravel + React** - Full-stack monorepo with React frontend (Vite/Webpack)
 - **Static** - HTML/CSS/JS, React (build), Vue (build), Angular (build)
 - **Python** - Flask, Django, FastAPI
@@ -488,61 +488,61 @@ autodeploy logs
 
 ### General Questions
 
-**Q: Apakah gratis?**  
-A: Ya, AutoDeploy CLI adalah open source dengan lisensi MIT. Gratis untuk digunakan, dimodifikasi, dan didistribusikan.
+**Q: Is it free?**  
+A: Yes, AutoDeploy CLI is open source with MIT license. Free to use, modify, and distribute.
 
-**Q: Siapa yang cocok menggunakan tool ini?**  
-A: Developer yang ingin deployment mudah, freelancer, startup/tim kecil, pelajar yang belajar web development.
+**Q: Who should use this tool?**  
+A: Developers who want easy deployment, freelancers, startups/small teams, students learning web development.
 
-**Q: Berapa lama setup awal?**  
-A: Setup pertama kali sekitar 3-5 menit. Setelah itu, deploy hanya butuh 30 detik.
+**Q: How long does initial setup take?**  
+A: Initial setup takes about 3-5 minutes. After that, deployments only take 30 seconds.
 
-**Q: Apakah aman menyimpan password di config file?**  
-A: File `deploy-config.yml` harus ditambahkan ke `.gitignore` agar tidak ter-commit ke git.
+**Q: Is it safe to store passwords in the config file?**  
+A: The `deploy-config.yml` file should be added to `.gitignore` to prevent it from being committed to git.
 
 ### Server Requirements
 
-**Q: VPS apa yang didukung?**  
+**Q: Which VPS providers are supported?**  
 A: Ubuntu 20.04+, Debian 10+, CentOS 7+ (experimental).
 
-**Q: Apakah bisa pakai shared hosting?**  
-A: Tidak. AutoDeploy membutuhkan SSH access dan kemampuan install software.
+**Q: Can I use shared hosting?**  
+A: No. AutoDeploy requires SSH access and the ability to install software.
 
-**Q: Berapa minimum spesifikasi VPS?**  
+**Q: What are the minimum VPS specifications?**  
 A: RAM: 512MB minimum (1GB recommended), Storage: 10GB minimum, CPU: 1 core minimum.
 
-**Q: Apakah harus punya domain?**  
-A: Tidak. Domain opsional. Tanpa domain, aplikasi bisa diakses via IP:PORT.
+**Q: Do I need a domain?**  
+A: No. Domain is optional. Without a domain, the application can be accessed via IP:PORT.
 
 ### Deployment
 
-**Q: Berapa lama proses deployment?**  
-A: Node.js app: 30-60 detik, PHP app: 20-40 detik, Static site: 10-20 detik.
+**Q: How long does deployment take?**  
+A: Node.js app: 30-60 seconds, PHP app: 20-40 seconds, Static site: 10-20 seconds.
 
-**Q: Apakah deployment menyebabkan downtime?**  
-A: Node.js: PM2 melakukan zero-downtime restart. PHP: Minimal downtime (< 1 detik). Static: No downtime.
+**Q: Does deployment cause downtime?**  
+A: Node.js: PM2 performs zero-downtime restart. PHP: Minimal downtime (< 1 second). Static: No downtime.
 
-**Q: Apa yang terjadi jika deployment gagal?**  
-A: Error ditampilkan di terminal, aplikasi tetap running dengan versi sebelumnya, bisa rollback jika perlu.
+**Q: What happens if deployment fails?**  
+A: Errors are displayed in the terminal, the application keeps running with the previous version, and you can rollback if needed.
 
 ### Domain & SSL
 
-**Q: Apakah SSL gratis?**  
-A: Ya, menggunakan Let's Encrypt yang gratis.
+**Q: Is SSL free?**  
+A: Yes, using Let's Encrypt which is free.
 
-**Q: Berapa lama SSL berlaku?**  
-A: 90 hari. Auto-renewal disetup otomatis oleh certbot.
+**Q: How long is the SSL certificate valid?**  
+A: 90 days. Auto-renewal is set up automatically by certbot.
 
-**Q: Domain harus sudah pointing sebelum setup?**  
-A: Ya, untuk SSL certificate berhasil, domain harus sudah pointing ke IP VPS.
+**Q: Does the domain need to be pointing before setup?**  
+A: Yes, for SSL certificate to succeed, the domain must already be pointing to the VPS IP.
 
 ### Advanced
 
-**Q: Apakah bisa custom build command?**  
-A: Ya, saat `autodeploy init` atau edit `deploy-config.yml`.
+**Q: Can I customize the build command?**  
+A: Yes, during `autodeploy init` or by editing `deploy-config.yml`.
 
-**Q: Apakah bisa integrate dengan CI/CD?**  
-A: Ya, bisa dipanggil dari CI/CD pipeline.
+**Q: Can it integrate with CI/CD?**  
+A: Yes, it can be called from CI/CD pipelines.
 
 ---
 
@@ -766,20 +766,20 @@ node bin/cli.js --help
 ## Comparison with Other Tools
 
 ### vs Heroku
-- **AutoDeploy**: Deploy ke VPS sendiri, lebih murah untuk long-term
-- **Heroku**: Platform as a Service, lebih mahal tapi lebih mudah
+- **AutoDeploy**: Deploy to your own VPS, cheaper for long-term
+- **Heroku**: Platform as a Service, more expensive but easier
 
 ### vs Vercel/Netlify
-- **AutoDeploy**: Full control, support semua jenis app
-- **Vercel/Netlify**: Fokus pada static sites dan serverless
+- **AutoDeploy**: Full control, supports all types of apps
+- **Vercel/Netlify**: Focused on static sites and serverless
 
 ### vs Docker
-- **AutoDeploy**: Simpler, tidak perlu belajar Docker
-- **Docker**: More powerful, tapi learning curve lebih tinggi
+- **AutoDeploy**: Simpler, no need to learn Docker
+- **Docker**: More powerful, but steeper learning curve
 
 ### vs Manual SSH
-- **AutoDeploy**: Otomatis, satu command, ada rollback
-- **Manual SSH**: Ribet, prone to error, no history
+- **AutoDeploy**: Automatic, one command, has rollback
+- **Manual SSH**: Complex, prone to error, no history
 
 ---
 
