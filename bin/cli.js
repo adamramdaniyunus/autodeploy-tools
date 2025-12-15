@@ -14,11 +14,12 @@ const program = new Command();
 program
   .name('autodeploy')
   .description('CLI tool for automatic deployment with git push')
-  .version('1.0.0');
+  .version('1.1.0');
 
 program
   .command('init')
   .description('Initialize deployment configuration (one-time setup)')
+  .option('--full', 'Full server setup (install Nginx, PHP, MySQL, etc.)')
   .action(initCommand);
 
 program

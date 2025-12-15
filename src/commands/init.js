@@ -8,8 +8,13 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
-export async function initCommand() {
+export async function initCommand(options = {}) {
   console.log(chalk.blue.bold('\nAutoDeploy CLI - Initial Setup\n'));
+  
+  if (options.full) {
+    console.log(chalk.yellow('🚀 Full server setup mode enabled'));
+    console.log(chalk.gray('   Will install: Nginx, PHP, Composer, Node.js, Database\n'));
+  }
 
   if (configExists()) {
     const { overwrite } = await inquirer.prompt([
@@ -108,6 +113,76 @@ export async function initCommand() {
       default: 'nodejs'
     },
     {
+      type: 'checkbox',
+      name: 'packagesToInstall',
+      message: 'Select packages to install on server:',
+      choices: (answers) => {
+        const isLaravelReact = answers.appType === 'laravel-react';
+        const isNodejs = answers.appType === 'nodejs';
+        const isPhp = answers.appType === 'php';
+        
+        return [
+          {
+            name: 'Nginx (Web Server)',
+            value: 'nginx',
+            checked: isLaravelReact || isPhp || isNodejs
+          },
+          {
+            name: 'PHP 8.3 + PHP-FPM',
+            value: 'php',
+            checked: isLaravelReact || isPhp
+          },
+          {
+            name: 'Composer (PHP Package Manager)',
+            value: 'composer',
+            checked: isLaravelReact || isPhp
+          },
+          {
+            name: 'Node.js 20 LTS + npm',
+            value: 'nodejs',
+            checked: isLaravelReact || isNodejs
+          },
+          {
+            name: 'PM2 (Node.js Process Manager)',
+            value: 'pm2',
+            checked: isNodejs
+          },
+          {
+            name: 'MySQL 8.0',
+            value: 'mysql',
+            checked: false
+          },
+          {
+            name: 'PostgreSQL 15',
+            value: 'postgresql',
+            checked: false
+          },
+          {
+            name: 'Redis (Cache & Queue)',
+            value: 'redis',
+            checked: false
+          },
+          {
+            name: 'UFW Firewall',
+            value: 'ufw',
+            checked: false
+          },
+          {
+            name: 'SSL Certificate (Let\'s Encrypt)',
+            value: 'ssl',
+            checked: true
+          }
+        ];
+      },
+      when: (answers) => options.full,
+      validate: (input) => {
+        if (input.length === 0) {
+          return 'Please select at least one package';
+        }
+        return true;
+      }
+    },
+    {
       type: 'input',
       name: 'frontendDir',
       message: 'Frontend directory (relative to project root):',
@@ -140,6 +215,59 @@ export async function initCommand() {
       name: 'runMigrations',
       message: 'Run database migrations on deployment?',
       default: false,
+      when: (answers) => answers.appType === 'laravel-react'
+    },
+    {
+      type: 'list',
+      name: 'database',
+      message: 'Database type:',
+      choices: [
+        { name: 'MySQL 8.0', value: 'mysql' },
+        { name: 'PostgreSQL 15', value: 'postgresql' },
+        { name: 'Skip (setup manually later)', value: 'none' }
+      ],
+      default: (answers) => {
+        // Auto-select based on package selection
+        if (answers.packagesToInstall?.includes('mysql')) return 'mysql';
+        if (answers.packagesToInstall?.includes('postgresql')) return 'postgresql';
+        return 'mysql';
+      },
+      when: (answers) => {
+        // Show if Laravel-React and no database selected in packages
+        if (answers.appType !== 'laravel-react') return false;
+        if (!options.full) return true; // Always show in basic mode
+        // In full mode, show only if no database was selected
+        const hasDatabase = answers.packagesToInstall?.includes('mysql') || 
+                           answers.packagesToInstall?.includes('postgresql');
+        return !hasDatabase;
+      }
+    },
+    {
+      type: 'input',
+      name: 'dbName',
+      message: 'Database name:',
+      default: (answers) => answers.projectName.replace(/[^a-z0-9]/gi, '_').toLowerCase(),
+      when: (answers) => answers.appType === 'laravel-react' && answers.database !== 'none'
+    },
+    {
+      type: 'input',
+      name: 'dbUser',
+      message: 'Database username:',
+      default: (answers) => answers.projectName.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_user',
+      when: (answers) => answers.appType === 'laravel-react' && answers.database !== 'none'
+    },
+    {
+      type: 'password',
+      name: 'dbPassword',
+      message: 'Database password:',
+      validate: (input) => input.length >= 8 || 'Password must be at least 8 characters',
+      when: (answers) => answers.appType === 'laravel-react' && answers.database !== 'none'
+    },
+    {
+      type: 'confirm',
+      name: 'createEnvFile',
+      message: 'Auto-generate .env file on server? (You can edit it later)',
+      default: true,
       when: (answers) => answers.appType === 'laravel-react'
     },
     {
@@ -194,7 +322,25 @@ export async function initCommand() {
       laravelOptimize: answers.laravelOptimize !== undefined ? answers.laravelOptimize : null,
       runMigrations: answers.runMigrations !== undefined ? answers.runMigrations : null
     },
-    domain: answers.domain || null
+    database: {
+      type: (() => {
+        // Auto-detect from package selection in full mode
+        if (options.full && answers.packagesToInstall) {
+          if (answers.packagesToInstall.includes('mysql')) return 'mysql';
+          if (answers.packagesToInstall.includes('postgresql')) return 'postgresql';
+        }
+        return answers.database || null;
+      })(),
+      name: answers.dbName || null,
+      user: answers.dbUser || null,
+      password: answers.dbPassword || null
+    },
+    laravel: {
+      createEnvFile: answers.createEnvFile || false
+    },
+    domain: answers.domain || null,
+    fullSetup: options.full || false,
+    packagesToInstall: answers.packagesToInstall || []
   };
 
   // Test SSH connection

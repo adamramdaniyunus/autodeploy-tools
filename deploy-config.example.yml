@@ -55,4 +55,14 @@ domain: example.com  # Optional, leave null if not using domain
 #   laravelOptimize: true  # Run Laravel cache commands
 #   runMigrations: false   # Set to true to auto-run migrations
 #
+# # Full setup mode (autodeploy init --full)
+# fullSetup: true
+# packagesToInstall:
+#   - nginx
+#   - php
+#   - composer
+#   - nodejs
+#   - mysql
+#   - ssl
+#
 # domain: app.example.com
