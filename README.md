@@ -252,9 +252,12 @@ build:
 domain: example.com
 ```
 
-**Important:** Add `deploy-config.yml` to `.gitignore`:
+**Important:** The `deploy-config.yml` file is automatically added to `.gitignore` during initialization to prevent credentials from being committed to git. The `.autodeploy/` directory is also excluded.
+
+If you need to manually add these entries:
 ```bash
 echo "deploy-config.yml" >> .gitignore
+echo ".autodeploy/" >> .gitignore
 ```
 
 ### Git Authentication

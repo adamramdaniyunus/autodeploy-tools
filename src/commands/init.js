@@ -5,6 +5,8 @@ import { saveConfig, configExists } from '../utils/config.js';
 import { SSHClient } from '../utils/ssh.js';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { readFile, writeFile } from 'fs/promises';
+import { existsSync } from 'fs';
 
 const execAsync = promisify(exec);
 
@@ -359,6 +361,9 @@ export async function initCommand(options = {}) {
     
     saveConfig(config);
     
+    // Update .gitignore to exclude sensitive files
+    await updateGitignore();
+    
     console.log(chalk.green.bold('\n[SUCCESS] Configuration saved successfully!'));
     console.log(chalk.blue('\nNext steps:'));
     console.log(chalk.white('  1. Set up git hook: autodeploy setup-hook'));
@@ -368,6 +373,45 @@ export async function initCommand(options = {}) {
   } catch (error) {
     console.error(chalk.red('\n[ERROR] Setup failed:'), error.message);
     process.exit(1);
+  }
+}
+
+async function updateGitignore() {
+  try {
+    const gitignorePath = '.gitignore';
+    const entriesToAdd = [
+      'deploy-config.yml',
+      '.autodeploy/'
+    ];
+    
+    let gitignoreContent = '';
+    
+    // Read existing .gitignore if it exists
+    if (existsSync(gitignorePath)) {
+      gitignoreContent = await readFile(gitignorePath, 'utf-8');
+    }
+    
+    // Check which entries need to be added
+    const linesToAdd = [];
+    for (const entry of entriesToAdd) {
+      if (!gitignoreContent.includes(entry)) {
+        linesToAdd.push(entry);
+      }
+    }
+    
+    // Add entries if needed
+    if (linesToAdd.length > 0) {
+      const newContent = gitignoreContent.trim() + '\n\n# AutoDeploy CLI\n' + linesToAdd.join('\n') + '\n';
+      await writeFile(gitignorePath, newContent);
+      console.log(chalk.gray(`✓ Updated .gitignore (added: ${linesToAdd.join(', ')})`));
+    } else {
+      console.log(chalk.gray('✓ .gitignore already contains AutoDeploy entries'));
+    }
+  } catch (error) {
+    console.log(chalk.yellow('⚠ Could not update .gitignore automatically'));
+    console.log(chalk.gray('  Please add these lines manually:'));
+    console.log(chalk.gray('  - deploy-config.yml'));
+    console.log(chalk.gray('  - .autodeploy/'));
   }
 }
 
