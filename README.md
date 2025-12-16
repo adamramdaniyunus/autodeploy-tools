@@ -1,5 +1,9 @@
 # AutoDeploy CLI
 
+[![npm version](https://badge.fury.io/js/@adamramdaniyunus%2Fautodeploy-cli.svg)](https://www.npmjs.com/package/@adamramdaniyunus/autodeploy-cli)
+[![npm downloads](https://img.shields.io/npm/dm/@adamramdaniyunus/autodeploy-cli.svg)](https://www.npmjs.com/package/@adamramdaniyunus/autodeploy-cli)
+[![license](https://img.shields.io/npm/l/@adamramdaniyunus/autodeploy-cli.svg)](https://github.com/adamramdaniyunus/autodeploy-tools/blob/main/LICENSE)
+
 CLI tool for automatic deployment with git push - setup once, deploy forever!
 
 ## Overview
@@ -58,7 +62,7 @@ AutoDeploy CLI is a command-line tool for automatic deployment that makes the ap
 ### Install Globally
 
 ```bash
-npm install -g autodeploy-cli
+npm install -g @adamramdaniyunus/autodeploy-cli
 ```
 
 Verify installation:
@@ -70,7 +74,7 @@ autodeploy --help
 ### Install Locally in Project
 
 ```bash
-npm install autodeploy-cli --save-dev
+npm install @adamramdaniyunus/autodeploy-cli --save-dev
 ```
 
 Use with npx:
@@ -138,7 +142,7 @@ autodeploy status
 For auto-deploy on git push:
 
 ```bash
-cp node_modules/autodeploy-cli/hooks/pre-push .git/hooks/pre-push
+cp node_modules/@adamramdaniyunus/autodeploy-cli/hooks/pre-push .git/hooks/pre-push
 chmod +x .git/hooks/pre-push
 ```
 
