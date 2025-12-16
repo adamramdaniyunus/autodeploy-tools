@@ -1,0 +1,32 @@
+# Development files
+.git
+.gitignore
+.DS_Store
+*.log
+npm-debug.log*
+
+# Test files
+test/
+tests/
+*.test.js
+*.spec.js
+
+# Documentation (optional, bisa di-include jika mau)
+docs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
+
+# Example and template files that shouldn't be in production
+deploy-config.example.yml
+.autodeploy/
+
+# Brain artifacts (planning files)
+.gemini/
