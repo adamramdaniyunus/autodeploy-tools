@@ -130,7 +130,7 @@ export async function initCommand(options = {}) {
             checked: isLaravelReact || isPhp || isNodejs
           },
           {
-            name: 'PHP 8.3 + PHP-FPM',
+            name: 'PHP + PHP-FPM',
             value: 'php',
             checked: isLaravelReact || isPhp
           },
@@ -140,7 +140,7 @@ export async function initCommand(options = {}) {
             checked: isLaravelReact || isPhp
           },
           {
-            name: 'Node.js 20 LTS + npm',
+            name: 'Node.js + npm',
             value: 'nodejs',
             checked: isLaravelReact || isNodejs
           },
@@ -182,6 +182,47 @@ export async function initCommand(options = {}) {
           return 'Please select at least one package';
         }
         return true;
+      }
+    },
+    {
+      type: 'list',
+      name: 'phpVersion',
+      message: 'Select PHP version:',
+      choices: [
+        { name: 'PHP 8.4 (Latest)', value: '8.4' },
+        { name: 'PHP 8.3 (Recommended)', value: '8.3' },
+        { name: 'PHP 8.2', value: '8.2' },
+        { name: 'PHP 8.1', value: '8.1' },
+        { name: 'PHP 7.4 (Legacy)', value: '7.4' }
+      ],
+      default: '8.3',
+      when: (answers) => {
+        // Show if PHP selected in packages (full mode)
+        if (options.full && answers.packagesToInstall?.includes('php')) {
+          return true;
+        }
+        // Show if PHP or Laravel-React type (basic mode)
+        return ['php', 'laravel-react'].includes(answers.appType);
+      }
+    },
+    {
+      type: 'list',
+      name: 'nodeVersion',
+      message: 'Select Node.js version:',
+      choices: [
+        { name: 'Node.js 22 (Latest)', value: '22' },
+        { name: 'Node.js 20 LTS (Recommended)', value: '20' },
+        { name: 'Node.js 18 LTS', value: '18' },
+        { name: 'Node.js 16 (Legacy)', value: '16' }
+      ],
+      default: '20',
+      when: (answers) => {
+        // Show if Node.js selected in packages (full mode)
+        if (options.full && answers.packagesToInstall?.includes('nodejs')) {
+          return true;
+        }
+        // Show if Node.js or Laravel-React type (basic mode)
+        return ['nodejs', 'laravel-react'].includes(answers.appType);
       }
     },
     {
@@ -339,6 +380,10 @@ export async function initCommand(options = {}) {
     },
     laravel: {
       createEnvFile: answers.createEnvFile || false
+    },
+    runtime: {
+      phpVersion: answers.phpVersion || '8.3',
+      nodeVersion: answers.nodeVersion || '20'
     },
     domain: answers.domain || null,
     fullSetup: options.full || false,

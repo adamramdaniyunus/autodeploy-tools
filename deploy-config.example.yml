@@ -65,4 +65,9 @@ domain: example.com  # Optional, leave null if not using domain
 #   - mysql
 #   - ssl
 #
+# # Runtime versions
+# runtime:
+#   phpVersion: "8.3"    # 8.4, 8.3, 8.2, 8.1, 7.4
+#   nodeVersion: "20"    # 22, 20, 18, 16
+#
 # domain: app.example.com

@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2025-12-13
+
+### Added
+- **Laravel + React Monorepo Support** - Full-stack deployment for Laravel with React frontend
+  - New project type: `laravel-react`
+  - Automatic frontend build with Vite/Webpack
+  - Automatic backend dependency installation with Composer
+  - Laravel optimization commands (config/route/view cache)
+  - Optional database migration support (safe mode, no --force)
+  - Dynamic PHP-FPM version detection (supports PHP 8.1, 8.2, 8.3+)
+  - Configurable frontend directory (default: `resources/ts`)
+  - Configurable build command (default: `npm run build`)
+- **Interactive Package Selection** (`autodeploy init --full`)
+  - Checkbox interface to select packages to install
+  - Smart defaults based on project type
+  - Options: Nginx, PHP, Composer, Node.js, PM2, MySQL, PostgreSQL, Redis, UFW, SSL
+- **Version Selection for Runtimes**
+  - PHP version selection (8.4, 8.3, 8.2, 8.1, 7.4)
+  - Node.js version selection (22, 20 LTS, 18 LTS, 16)
+  - Versions stored in config and used during installation
+- **Automatic .gitignore Update**
+  - Automatically adds `deploy-config.yml` and `.autodeploy/` to .gitignore
+  - Prevents credentials from being committed to git
+- Git authentication support during initialization
+  - Personal Access Token (PAT) method
+  - SSH key generation and setup
+  - Automatic credential configuration on server
+
 ## [1.0.0] - 2025-12-11
 
 ### Added
